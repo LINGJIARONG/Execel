@@ -28,9 +28,15 @@ public class App
 {
 	public static void main( String[] args ) throws IOException
 	{
-		String fileLocation= System.getProperty("user.home")+"/Desktop/ff.xlsx";
-		System.out.println(fileLocation);
+	
+        String currentDir = System.getProperty("user.dir");
+        System.out.println("Current dir using System:" +currentDir);
+		String fileLocation= currentDir+"/ff.xlsx";
 
+		System.out.println(fileLocation);
+		  System.out.println("Working Directory = " +
+	              System.getProperty("user.dir"));
+		  
 		FileInputStream file = new FileInputStream(new File(fileLocation));
 		Workbook workbook = new XSSFWorkbook(file);
 		Sheet sheet = workbook.getSheetAt(0);
