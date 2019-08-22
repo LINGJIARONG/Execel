@@ -28,7 +28,7 @@ public class App
 {
 	public static void main( String[] args ) throws IOException
 	{
-		String fileLocation= System.getProperty("user.home")+"/Desktop/ff.xlsx";
+		String fileLocation= System.getProperty("user.home")+"/Desktop/Excel/ff.xlsx";
 		System.out.println(fileLocation);
 
 		FileInputStream file = new FileInputStream(new File(fileLocation));
@@ -45,6 +45,7 @@ public class App
 			System.out.println();
 			i++;
 		}
+		
 		System.out.println(i);
 		workbook.close();
 
