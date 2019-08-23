@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
@@ -30,7 +32,7 @@ public class App
 {
 	public static final int status=18;
 
-	public static void main( String[] args ) throws IOException
+	public static void treat(List<String> problemRN) throws IOException
 	{
 
 		String fileLocation= System.getProperty("user.home")+"/t/Excel/ff.xlsx";
@@ -41,14 +43,10 @@ public class App
 		FileInputStream file = new FileInputStream(new File(fileLocation));
 		Workbook workbook = new XSSFWorkbook(file);
 		Sheet sheet = workbook.getSheetAt(0);
-
 		int i = 1;
 		int problem=0;
-
 		for (Row row : sheet) {
 			int col=0;	
-			
-
 			for(Cell c:row) {
 				if(col!=0&&col!=8&&col!=12&&col!=15) {
 					col++;
@@ -82,25 +80,24 @@ public class App
 
 						//						Cell problemCell=row.getCell(16);
 						//						problemCell.setCellValue("1");
-
 					}
 
 					else if(c.toString().trim()=="") {
-						//System.out.println(i+"-th row "+c.toString()+"-r:g:b= "+red+":"+green+":"+blue+",");
-
-
-
+						//System.out.println(i+"-th row "+c.toString()+"-r:g:b= "+red+":"+green+":"+blue+",")
 					}
 					else {
-
 						System.out.println(i+"-th row "+c.toString()+"-r:g:b= "+red+":"+green+":"+blue+",");
 						problem++;
-
-						Cell problemCell2=row.getCell(status);
-						problemCell2.setCellValue(99);			
-
-
-
+						System.out.println(row.getCell(1).toString());
+						if(row.getCell(1).toString().trim().isEmpty()) {
+						}else {
+							try {
+								Cell problemCell2=row.getCell(status);
+								problemCell2.setCellValue(99);	
+								System.out.println(row.getCell(1).toString());
+							}catch(NumberFormatException e) {
+							}
+						}
 						break;
 					}
 				}else {
@@ -111,34 +108,38 @@ public class App
 			i++;
 		}
 
-		System.out.println("total : "+ i+"/"+"problem : "+problem);
-		file.close();
-
-		String output=System.getProperty("user.home")+"/t/Excel/out.xlsx";
-
-		try {
-			FileOutputStream outputStream = new FileOutputStream(output);
-		//	workbook.write(outputStream);
-			outputStream.close();
-			workbook.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		fileLocation=System.getProperty("user.home")+"/t/Excel/out.csv";
+		File fileOut = new File(fileLocation);
+		if (!fileOut.exists()) {
+			fileOut.createNewFile();
 		}
 
+		FileOutputStream out=new FileOutputStream(fileOut);
+		for (Row row : sheet) {
+			String rowData="";
+			for(int j=0;j<row.getLastCellNum()-2;j++) {
+				Cell c=row.getCell(j);
+				if(c==null)
+					rowData+="$";
+				else
+					rowData+=c.toString()+"$";
+			}
+			rowData+=row.getCell(row.getLastCellNum()-1).toString()+"\r";
+			out.write(rowData.getBytes());
+		}
+		out.close();
 
-
-
-		//
-		//		FileOutputStream out=new FileOutputStream(new File(fileLocation));
+		System.out.println("total : "+ i+"/"+"problem : "+problem);
+		file.close();
 		//		workbook.write(out);
 		//		out.flush();
 		//		out.close();
 		workbook.close();
 
-
-
-
+	}
+	public static void main(String[] args) throws IOException {
+		List<String> array=new ArrayList<>();
+		App.treat(array);
+		System.out.println(array.size());
 	}
 }
