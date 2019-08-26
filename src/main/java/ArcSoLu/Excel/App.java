@@ -32,7 +32,7 @@ public class App
 {
 	public static final int status=18;
 
-	public static void treat(List<String> problemRN) throws IOException
+	public static void treat() throws Exception
 	{
 
 		String fileLocation= System.getProperty("user.home")+"/t/Excel/ff.xlsx";
@@ -45,13 +45,18 @@ public class App
 		Sheet sheet = workbook.getSheetAt(0);
 		int i = 1;
 		int problem=0;
+		ArrayList<Integer> throwaway=new ArrayList<>();
 		for (Row row : sheet) {
 			int col=0;	
+			Boolean invalid=true;
 			for(Cell c:row) {
-				if(col!=0&&col!=8&&col!=12&&col!=15) {
+				if(col!=0&&col!=8&&col!=12&&col!=15&&col!=9&&col!=1) {
 					col++;
 					continue;
 				}
+				if(c.toString().trim()!="")
+					invalid=false;
+					
 				short fontIndex = c.getCellStyle().getFontIndex();
 				Font font = workbook.getFontAt(fontIndex);
 				int red = 0;
@@ -105,41 +110,56 @@ public class App
 				}
 				col++;
 			}
+			if(invalid)
+				throwaway.add(i);
 			i++;
 		}
 
-		fileLocation=System.getProperty("user.home")+"/t/Excel/out.csv";
-		File fileOut = new File(fileLocation);
-		if (!fileOut.exists()) {
-			fileOut.createNewFile();
-		}
-
-		FileOutputStream out=new FileOutputStream(fileOut);
+		DriverExample.connect();
+		DriverExample.prepare();
+		int input =0;
+		System.out.println(throwaway.toString());
+		//FileOutputStream out=new FileOutputStream(fileOut);
 		for (Row row : sheet) {
-			String rowData="";
-			for(int j=0;j<row.getLastCellNum()-2;j++) {
+			input++;
+			if(input==1)
+				continue;
+			if(throwaway.contains(input))
+				continue;
+			//String rowData="";
+			ArrayList<String> rowDataList = new ArrayList<String>();
+			for(int j=0;j<row.getLastCellNum()-1;j++) {
 				Cell c=row.getCell(j);
-				if(c==null)
-					rowData+="$";
-				else
-					rowData+=c.toString()+"$";
+				if(c==null) {
+					rowDataList.add("");
+					//rowData+="$";
+				}
+				else {
+					rowDataList.add(c.toString());
+					//rowData+=c.toString()+"$";
+				}
 			}
-			rowData+=row.getCell(row.getLastCellNum()-1).toString()+"\r";
-			out.write(rowData.getBytes());
+			rowDataList.add(row.getCell(row.getLastCellNum()-1).toString());
+			DriverExample.insertLine(rowDataList);
+			//rowData+=row.getCell(row.getLastCellNum()-1).toString()+"\r";
+			//out.write(rowData.getBytes());
 		}
-		out.close();
+	//	out.close();
+
+		DriverExample.execute();
 
 		System.out.println("total : "+ i+"/"+"problem : "+problem);
+		System.out.println("total input "+i+"record");
+		System.out.println("insert total:"+DriverExample.data_count);
 		file.close();
 		//		workbook.write(out);
 		//		out.flush();
 		//		out.close();
 		workbook.close();
+		DriverExample.close();
 
 	}
-	public static void main(String[] args) throws IOException {
-		List<String> array=new ArrayList<>();
-		App.treat(array);
-		System.out.println(array.size());
+	public static void main(String[] args) throws Exception {
+		App.treat();
 	}
 }

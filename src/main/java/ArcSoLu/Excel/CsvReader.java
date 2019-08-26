@@ -20,7 +20,6 @@ public class CsvReader {
 	}
 	public static void main(String[] args) throws IOException {
 		List<String> array=new ArrayList<>();
-		App.treat(array);
 		System.out.println(array.size());
 
 		File writename = new File(System.getProperty("user.home")+"/t/Excel/fout.csv");
