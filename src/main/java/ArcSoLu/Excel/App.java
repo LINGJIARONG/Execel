@@ -76,24 +76,15 @@ public class App
 				}
 				if(red!=0||green!=0||blue!=0) {
 					if(red==67&&blue==67&&green==67) {
-
-						//						Cell problemCell=row.getCell(16);
-						//						problemCell.setCellValue("1");
-						//workbook.write(out);
-
-					}else if(col==0&&c.toString().trim()=="") {
-
-						//						Cell problemCell=row.getCell(16);
-						//						problemCell.setCellValue("1");
+						//gris
+					}else if(col==0&&c.toString().trim()=="") {		
+						//empty date
 					}
-
 					else if(c.toString().trim()=="") {
-						//System.out.println(i+"-th row "+c.toString()+"-r:g:b= "+red+":"+green+":"+blue+",")
+						
 					}
 					else {
-						System.out.println(i+"-th row "+c.toString()+"-r:g:b= "+red+":"+green+":"+blue+",");
 						problem++;
-						System.out.println(row.getCell(1).toString());
 						if(row.getCell(1).toString().trim().isEmpty()) {
 						}else {
 							try {

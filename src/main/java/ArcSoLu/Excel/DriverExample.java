@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //Original version of this file was part of InterClient 2.01 examples
 //
@@ -30,8 +32,8 @@ public class DriverExample
 	static java.sql.Statement s = null;
 	public static int data_count =0;
 	static Log log=new Log();
-	private static ArrayList<String> n_SAV=new ArrayList<>();
-	private static int random_cr=900;
+	private static Map<String,Integer> n_SAV=new HashMap<>();
+	private static int random_cr=199000;
 
 
 	// Make a connection to an employee.gdb on your local machine,
@@ -48,7 +50,7 @@ public class DriverExample
 		//String databaseURL = "jdbc:firebirdsql:native:localhost/3050:c:/database/employee.gdb";
 		//String databaseURL = "jdbc:firebirdsql:local:c:/database/employee.gdb";
 		//String databaseURL = "jdbc:firebirdsql:embedded:c:/database/employee.fdb?lc_ctype=WIN1251";
-		String databaseURL = "jdbc:firebirdsql:localhost/3050:/Users/ano/sav.fdb";
+		String databaseURL = "jdbc:firebirdsql:localhost/3050:/Users/ano/databse/new.fdb";
 		String user = "SYSDBA";
 		String password = "masterkey";
 		String driverName = "org.firebirdsql.jdbc.FBDriver";
@@ -182,36 +184,127 @@ public class DriverExample
 
 	public static void prepare() throws SQLException {
 		s = c.createStatement();
-		String updateString = "insert into SAVDATA values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		String updateString = "insert into SAV1 values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		insertRow = c.prepareStatement(updateString);
 	}
 
+	private static boolean isAllDigit(String a) {
+		return a.matches("[0-9]+");
+	}
+	private static void add(String key) {
+		if(n_SAV.containsKey(key))
+			n_SAV.merge(key,1,Integer::sum);
+		else
+			n_SAV.put(key, 1);
+	}
+
 	public static void insertLine(ArrayList<String> line) throws SQLException {
-	
+
 		insertRow.clearParameters();
-		
+
 		try {
 			for(int i=0;i<line.size()-1;i++) {
 				String cell=line.get(i);	
 				//cell=cell.replace("'", "&acute");
-			
-				if(i==1&&cell.trim()=="") {
-					random_cr+=2;
-					cell="def"+random_cr;
-				}
+
 				if(i==1) {
-					if(!n_SAV.contains(cell))
-						n_SAV.add(cell);
+					cell=cell.replace(".", "");
+					//empty pk
+					if(cell.trim()=="") {
+						cell=""+random_cr;
+						random_cr++;
+					}
 					else {
-						random_cr+=2;
-						cell="def"+random_cr;
-						n_SAV.add(cell);					
+						//digit pk and unique
+						if(isAllDigit(cell)) {
+							add(cell);
+							if(cell.length()==6) { //ok!
+							}else {
+								try {
+									// 1,2,3,4,5 digits-> 6 digits
+									Integer pk=Integer.parseInt(cell);
+									int time=n_SAV.get(cell)-1;
+									if(pk<10)
+										pk=pk*10000+100000+time;
+									else if(pk<100)
+										pk=pk*1000+100000+time;
+									else if(pk<1000)
+										pk=pk*100+100000+time;
+									else if (pk<10000)
+										pk=pk*10+100000+time;
+									else if (pk<100000)
+										pk=pk*10+time;
+									cell=""+pk;
+								}catch(NumberFormatException e) {	
+									cell=""+random_cr;
+									random_cr++;
+									add(cell);
+								}
+							}
+						}else {
+							if(cell.length()<5) {
+								cell=""+random_cr;
+								random_cr++;
+								add(cell);
+								continue;
+
+							}
+							boolean ok=true;
+							if(!cell.contains("-")) {
+								System.out.println(cell);
+								cell=(cell.substring(cell.length()-5,cell.length()-1));
+
+							}else {
+								String[] cells=cell.split("-");
+								String target=cells[0];
+								cell=(target.substring(target.length()-5,target.length()-1));								add(cell);
+							}
+							if(isAllDigit(cell))
+								add(cell);
+							else {
+								int j=0;
+								while(!isAllDigit(cell)) {
+									cell=cell.substring(j,cell.length()-1);
+									j++;
+								}
+								if(cell.trim()!="")
+									add(cell);
+								else {
+									cell=""+random_cr;
+									random_cr++;
+									add(cell);
+									ok=false;
+								}
+							}
+							if(ok) {
+								try{
+									Integer pk=Integer.parseInt(cell);
+									int time=n_SAV.get(cell)-1;
+									if(pk<10)
+										pk=pk*10000+100000+time;
+									else if(pk<100)
+										pk=pk*1000+100000+time;
+									else if(pk<1000)
+										pk=pk*100+100000+time;
+									else if (pk<10000)
+										pk=pk*10+100000+time;
+									else if (pk<100000)
+										pk=pk*10+time;
+									cell=""+pk;
+								}catch(NumberFormatException e) {
+									cell=""+random_cr;
+									random_cr++;
+									add(cell);
+
+								}
+							}
+						}
+
 					}
 				}
 				insertRow.setString(i+1,cell);
 			}
 			data_count++;
-
 			insertRow.setString(line.size(),line.get(line.size()-1));
 			insertRow.addBatch();
 
@@ -233,8 +326,8 @@ public class DriverExample
 
 	public static void  close() throws SQLException {
 		c.close();
-		
-	
+
+
 	}
 
 
